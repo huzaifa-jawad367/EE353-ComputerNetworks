@@ -6,6 +6,9 @@
 #include <arpa/inet.h>
 #include <unistd.h>
 #include <fcntl.h> // For non-blocking socket
+#include <time.h> // For time functions
+#include <stdint.h> // For int32_t
+
 
 #define PACKET_SIZE 500
 #define WINDOW_SIZE 10  // Example window size
@@ -171,4 +174,3 @@ int main() {
     // Terminate sender
     return 0;
 }
-
