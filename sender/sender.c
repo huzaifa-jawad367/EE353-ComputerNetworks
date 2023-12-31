@@ -12,10 +12,20 @@
 
 // Packet structure definition
 struct packet {
-    int seq_num;
+    int32_t seq_num;
     char data[PACKET_SIZE];
-    int len;
+    int32_t len;
 };
+
+// Function to serialize the packet
+void serialize_packet(struct packet *pkt, char *buffer) {
+    int32_t seq_num_net = htonl(pkt->seq_num); // Convert to network byte order
+    int32_t len_net = htonl(pkt->len); // Convert to network byte order
+
+    memcpy(buffer, &seq_num_net, sizeof(seq_num_net));
+    memcpy(buffer + sizeof(seq_num_net), pkt->data, PACKET_SIZE);
+    memcpy(buffer + sizeof(seq_num_net) + PACKET_SIZE, &len_net, sizeof(len_net));
+}
 
 // Function to check if the window is full
 int is_window_full(int base, int next_seq_num) {
@@ -65,7 +75,14 @@ int main() {
             }
 
             // TODO: Implement packet serialization if necessary
-            // ...
+            char serialized_pkt[sizeof(struct packet)];
+            serialize_packet(&pkt, serialized_pkt);
+
+            ssize_t sent_bytes = sendto(sockfd, serialized_pkt, sizeof(serialized_pkt), 0, (const struct sockaddr *)&servaddr, sizeof(servaddr));
+            if (sent_bytes < 0) {
+                perror("Failed to send packet");
+                exit(EXIT_FAILURE);
+            }
 
             // TODO: Send the packet
             ssize_t sent_bytes = sendto(sockfd, (const char *)&pkt, sizeof(pkt), 0, (const struct sockaddr *)&servaddr, sizeof(servaddr));
